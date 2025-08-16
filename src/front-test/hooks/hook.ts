@@ -1,5 +1,5 @@
 "use strict";
-import { chromium, firefox, webkit, Browser, Page } from 'playwright';
+import { chromium, firefox, webkit, Browser, Page, ChromiumBrowser } from 'playwright';
 import { BeforeAll, AfterAll, AfterStep, Status } from '@cucumber/cucumber';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -25,8 +25,8 @@ BeforeAll(async function () {
   if (browserChoice) {
     console.log(`Ejecutando solo en: ${browserChoice}`);
     if (browserChoice === 'chromium') browserTypes.push(chromium);
-    if (browserChoice === 'firefox') browserTypes.push(firefox);
-    if (browserChoice === 'webkit') browserTypes.push(webkit);
+    //if (browserChoice === 'firefox') browserTypes.push(firefox);
+    //if (browserChoice === 'webkit') browserTypes.push(webkit);
   } else {
     console.log('Ejecutando en Chromium, Firefox y WebKit...');
     browserTypes = [chromium, firefox, webkit];
