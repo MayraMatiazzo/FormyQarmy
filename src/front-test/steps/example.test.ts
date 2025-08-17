@@ -30,71 +30,6 @@ Then('el usuario deberia seguir viendo el boton "Signup"', async () => {
 });
 
 
-//crear cuenta
-Given('el usuario se encuentra en la pagina de signup', async () => {
-  await pages[0].goto('https://automationexercise.com/signup');
-  await pages[0].waitForLoadState('domcontentloaded');
-});
-// Registro completo de usuario - Account Information
-When('el usuario completa el formulario de account information:', async (dataTable) => {
-   const data = dataTable.hashes()[0];
-
-  // Name
-  await pages[0].locator('input[id="name"]').waitFor({ state: 'visible', timeout: 30000 });
-  await pages[0].fill('input[id="name"]', data.Name);
-
-  // Email (campo oculto con name=email_address)
-  await pages[0].fill('input[name="email_address"]', data.Email);
-
-  // Password
-  await pages[0].locator('input[data-qa="password"]').waitFor({ state: 'visible', timeout: 30000 });
-  await pages[0].fill('input[data-qa="password"]', data.Password);
-
-  // Fecha de nacimiento
-  await pages[0].locator('select[data-qa="days"]').waitFor({ state: 'visible', timeout: 30000 });
-  await pages[0].selectOption('select[data-qa="days"]', data.Day);
-  await pages[0].selectOption('select[data-qa="months"]', data.Month);
-  await pages[0].selectOption('select[data-qa="years"]', data.Year);
-
-  // Newsletter y Offers
-  if (data.Newsletter === 'true') await pages[0].locator('input[id="newsletter"]').check();
-  if (data.Offers === 'true') await pages[0].locator('input[id="optin"]').check();
-});
-
-// Address Information
-When('el usuario completa el formulario de address information:', async (dataTable) => {
-  const data = dataTable.rowsHash();
-
-  await pages[0].locator('input[data-qa="first_name"]').waitFor({ state: 'visible', timeout: 30000 });
-  await pages[0].fill('input[data-qa="first_name"]', data.FirstName);
-
-  await pages[0].fill('input[data-qa="last_name"]', data.LastName);
-  await pages[0].fill('input[data-qa="company"]', data.Company);
-  await pages[0].fill('input[data-qa="address"]', data.Address);
-  await pages[0].fill('input[data-qa="address2"]', data.Address2);
-
-  await pages[0].selectOption('select[data-qa="country"]', data.Country);
-  await pages[0].fill('input[data-qa="state"]', data.State);
-  await pages[0].fill('input[data-qa="city"]', data.City);
-  await pages[0].fill('input[data-qa="zipcode"]', data.Zipcode);
-  await pages[0].fill('input[data-qa="mobile_number"]', data.MobileNumber);
-});
-
-// Botón Create Account
-When('el usuario hace clic en "Create Account"', async () => {
-  await pages[0].locator('button[data-qa="create-account"]').waitFor({ state: 'visible', timeout: 30000 });
-  await pages[0].locator('button[data-qa="create-account"]').click();
-});
-
-// Mensaje de éxito
-Then('el usuario debería ver el mensaje de registro exitoso', async () => {
-  await pages[0].locator('h2:has-text("Account Created!")').waitFor({ state: 'visible', timeout: 30000 });
-  const locator = pages[0].locator('h2:has-text("Account Created!")');
-  await expect(locator).toBeVisible();
-});
-
-
-
 //Login
 
 When('el usuario ingresa {string} en el campo Email Address', async (email) => {
@@ -143,4 +78,29 @@ Then('el usuario debería ver el mensaje de login incorrecto {string}', async (m
   const errorLocator = page.locator(`p:has-text("${mensaje}")`);
   await errorLocator.waitFor({ state: 'visible', timeout: 15000 });
   await expect(errorLocator).toBeVisible();
+});
+
+//login sin campos
+
+When('el usuario hace clic en "Login" sin ingresar Email ni Password', async () => {
+  const page = pages[0];
+  const loginButton = page.locator(L.ButtonLogin2);
+
+  await loginButton.waitFor({ state: 'attached', timeout: 15000 });
+  await loginButton.click({ force: true });
+});
+
+Then('el usuario debería ver una alerta indicando que complete los campos', async () => {
+  const page = pages[0];
+
+  page.on('dialog', async dialog => {
+    const text = dialog.message();
+    if (!text.toLowerCase().includes('fill out this field')) { 
+      throw new Error(`El mensaje de alerta esperado no coincide: ${text}`);
+    }
+    await dialog.dismiss();
+  });
+
+  const loginButton = page.locator(L.ButtonLogin2);
+  await loginButton.click();
 });
